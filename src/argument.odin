@@ -31,6 +31,16 @@ run_list_command :: proc(args: ^[]string)
 	list_templates()
 }
 
+run_init_template :: proc(args: ^[]string)
+{
+	if len(args) < 2
+	{
+		fmt.eprintfln("There is no name in the arguments")
+	}
+	name_for_template:= args[1]
+	copy_template_files(name_for_template, args)
+}
+
 ARGUMENTS :: []Argument{
 	Argument{
 		identifier = "--help",
@@ -46,6 +56,11 @@ ARGUMENTS :: []Argument{
 		identifier = "--list",
 		abreviation = "-l",
 		command = run_list_command
+	},
+	Argument{
+		identifier = "--init",
+		abreviation = "-i",
+		command = run_init_template
 	}
 }
 

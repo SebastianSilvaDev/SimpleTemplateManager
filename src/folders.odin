@@ -122,3 +122,58 @@ create_template_directory :: proc(template_name: string)
 
 	fmt.printfln("Template Folder Created at %s", directory)
 }
+
+get_template_folder :: proc(template_name: string) -> (string, bool)
+{
+	if !does_template_directory_exists()
+	{
+		fmt.eprintfln("No Templates Found")
+		return "", false
+	}
+
+	templates_directory, ok:= get_template_directory(context.allocator)
+	if !ok
+	{
+		fmt.eprintfln("No templates found")
+		return "", false
+	}
+
+	template_directory := fmt.tprintf("%s\\%s", templates_directory, template_name)
+	if !os.is_directory(template_directory)
+	{
+		fmt.eprintfln("No Template with that name exists")
+		return "", false
+	}
+
+	return template_directory, true
+}
+
+copy_template_files :: proc(template_name: string, args: ^[]string)
+{
+	template_forlder, template_folder_ok:= get_template_folder(template_name)
+	if !template_folder_ok
+	{
+		fmt.eprintfln("Error, couldn't find template folder")
+		return
+	}
+
+	workind_directory, working_dir_err:= os.get_working_directory(context.allocator)
+	if working_dir_err != nil
+	{
+		fmt.eprintfln("Error %s", working_dir_err)
+		return
+	}
+
+	template_config, ok:= get_template_file(template_forlder)
+	if (!ok)
+	{
+		fmt.eprintfln("Error while getting template config file")
+		return
+	}
+	parameters_to_replace, params_ok:= fill_templates_params(&template_config)
+	if (!params_ok)
+	{
+		fmt.eprintf("Error while loading paramters for template")
+		return
+	}
+}
