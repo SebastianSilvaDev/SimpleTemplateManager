@@ -44,7 +44,7 @@ fill_templates_params :: proc(config : ^TemplateConfig) -> (TemplateParamsToRepl
 	bufio.scanner_init(&scanner, instream, context.temp_allocator)
 	for &param in config.params
 	{
-		fmt.printfln("Input param %s:", param.name)
+		fmt.printfln("Input param %s", param.name)
 		if !bufio.scanner_scan(&scanner)
 		{
 			return template_params_to_replace, false

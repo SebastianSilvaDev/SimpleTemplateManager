@@ -176,4 +176,47 @@ copy_template_files :: proc(template_name: string, args: ^[]string)
 		fmt.eprintf("Error while loading paramters for template")
 		return
 	}
+	copy_directory(template_forlder, workind_directory, &parameters_to_replace)
+}
+
+copy_directory :: proc (folder_directory, target_directory: string, parameters_data: ^TemplateParamsToReplace) -> bool
+{
+	walker:= os.walker_create(folder_directory)
+	defer os.walker_destroy(&walker)
+	for
+	{
+		file_info, ok:= os.walker_walk(&walker)
+		if !ok
+		{
+			break
+		}
+		if file_info.type == .Directory
+		{
+			new_target_dir:= fmt.aprintf("%s\\%s", target_directory, file_info.name)
+			os.make_directory(new_target_dir)
+			delete(new_target_dir)
+		}
+		else if file_info.type == .Regular
+		{
+			if file_info.name == "template.json"
+			{
+				continue
+			}
+			folder_dir_length:=len(folder_directory)
+			folder_string := file_info.fullpath[folder_dir_length:]
+			file_data, file_ok:=os.read_entire_file_from_path(file_info.fullpath, context.allocator)
+			new_file_path:= fmt.tprintf("%s\\%s", target_directory, folder_string)
+			new_string_builder:= strings.builder_make()
+			strings.write_bytes(&new_string_builder, file_data)
+			for name, param in parameters_data.param_map
+			{
+				strings.builder_replace_all(&new_string_builder, name, param)
+			}
+			new_file_data:= strings.to_string(new_string_builder)
+			data_to_write:= transmute([]byte)(new_file_data)
+			write_ok:=os.write_entire_file(new_file_path, new_file_data)
+			defer delete(file_data)
+		}
+	}
+	return true
 }

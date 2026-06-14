@@ -23,8 +23,9 @@ main :: proc ()
      	}
     }
 
-    DIR :: "build"
-    if os.exists("./" + DIR)
+    DIR := "build" if is_debug else "bin"
+    build_directory:= fmt.tprintf("%s%s", "./", DIR)
+    if os.exists(build_directory)
     {}
     else
     {
@@ -40,7 +41,7 @@ main :: proc ()
     OUT :: EXE + ".exe" when ODIN_OS == .Windows else EXE
     DEBUG_FLAG :: "-debug"
     COMMAND:: "odin build src"
-    out_dir:= "-out:" + DIR + "/" + OUT
+    out_dir:= fmt.tprintf("-out:%s/%s", DIR, OUT)
     command_args := make([dynamic]string, 0, 10) // maybe capacity can be more lets see
     defer delete(command_args)
     append(&command_args, COMMAND)
