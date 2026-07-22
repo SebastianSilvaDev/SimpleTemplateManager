@@ -28,6 +28,16 @@ TemplateConfig :: struct
 	params: []TemplateParam
 }
 
+delete_template_config :: proc(template_config: ^TemplateConfig)
+{
+	delete(template_config.name)
+	for &param in template_config.params
+	{
+		delete(param.name)
+		delete(param.value)
+	}
+}
+
 make_template_params_to_replace :: proc() -> TemplateParamsToReplace
 {
 	new_template_params_to_replace := TemplateParamsToReplace{
@@ -58,7 +68,7 @@ fill_templates_params :: proc(config : ^TemplateConfig) -> (TemplateParamsToRepl
 create_basic_template_file :: proc(in_directory: string, template_name: string)
 {
 
-	filename := strings.join({in_directory, TEMPLATE_CONFIG_FILE_NAME}, "\\", context.allocator)
+	filename := strings.join({in_directory, TEMPLATE_CONFIG_FILE_NAME}, "\\", context.temp_allocator)
 	file, err:= os.open(filename, {.Create})
 	if err != nil
 	{
@@ -88,14 +98,13 @@ create_basic_template_file :: proc(in_directory: string, template_name: string)
 
 get_template_file :: proc(in_directory: string) -> (TemplateConfig, bool)
 {
-	filename := strings.join({in_directory, TEMPLATE_CONFIG_FILE_NAME}, "\\", context.allocator)
-	file, err:= os.read_entire_file_from_path(filename, context.allocator)
+	filename := strings.join({in_directory, TEMPLATE_CONFIG_FILE_NAME}, "\\", context.temp_allocator)
+	file, err:= os.read_entire_file_from_path(filename, context.temp_allocator)
 	if err != nil
 	{
 		fmt.eprintfln("Error While Creating File %s", err)
 		return {}, false
 	}
-	defer delete(file)
 	config: TemplateConfig
 	json_err:= json.unmarshal(file, &config)
 	if json_err != nil

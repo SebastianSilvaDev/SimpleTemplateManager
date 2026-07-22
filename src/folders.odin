@@ -10,7 +10,7 @@ TEMPLATE_DIR_NAME :: "templates"
 
 does_template_directory_exists :: proc() -> bool
 {
-	executable_dir, dir_err := os.get_executable_directory(context.allocator)
+	executable_dir, dir_err := os.get_executable_directory(context.temp_allocator)
 	if (dir_err	!= nil)
 	{
 		fmt.eprintfln("Fatal Error %s", dir_err)
@@ -22,7 +22,7 @@ does_template_directory_exists :: proc() -> bool
 
 create_folder_structure :: proc() -> bool
 {
-	executable_dir, dir_err := os.get_executable_directory(context.allocator)
+	executable_dir, dir_err := os.get_executable_directory(context.temp_allocator)
 	if (dir_err	!= nil)
 	{
 		fmt.eprintfln("Fatal Error %s", dir_err)
@@ -49,7 +49,7 @@ list_templates :: proc()
 		success:= create_folder_structure()
 		if (!success) {return}
 	}
-	executable_dir, dir_err := os.get_executable_directory(context.allocator)
+	executable_dir, dir_err := os.get_executable_directory(context.temp_allocator)
 	if (dir_err	!= nil)
 	{
 		fmt.eprintfln("Fatal Error %s", dir_err)
@@ -57,7 +57,7 @@ list_templates :: proc()
 	}
 
 	template_directory:= fmt.tprintf("%s\\%s", executable_dir, TEMPLATE_DIR_NAME)
-	file_infos, file_err:= os.read_all_directory_by_path(template_directory, context.allocator)
+	file_infos, file_err:= os.read_all_directory_by_path(template_directory, context.temp_allocator)
 	if (file_err != nil)
 	{
 		fmt.eprintfln("Couldn't Get Any Files from directory %s", file_err)
@@ -80,7 +80,7 @@ get_template_directory :: proc(allocator: runtime.Allocator = context.allocator)
 		return "", false
 	}
 
-	executable_dir, dir_err := os.get_executable_directory(context.allocator)
+	executable_dir, dir_err := os.get_executable_directory(context.temp_allocator)
 	if (dir_err	!= nil)
 	{
 		fmt.eprintfln("Fatal Error %s", dir_err)
@@ -99,7 +99,7 @@ create_template_directory :: proc(template_name: string)
 		if (!success) {return}
 	}
 
-	template_directory, ok:= get_template_directory(context.allocator)
+	template_directory, ok:= get_template_directory(context.temp_allocator)
 	if (!ok)
 	{
 		fmt.eprintfln("Template Directory couln't be found")
@@ -170,6 +170,7 @@ copy_template_files :: proc(template_name: string, args: ^[]string)
 		fmt.eprintfln("Error while getting template config file")
 		return
 	}
+	defer delete_template_config(&template_config)
 	parameters_to_replace, params_ok:= fill_templates_params(&template_config)
 	if (!params_ok)
 	{
