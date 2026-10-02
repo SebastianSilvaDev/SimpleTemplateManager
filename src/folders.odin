@@ -193,7 +193,7 @@ copy_directory :: proc (folder_directory, target_directory: string, parameters_d
 		}
 		if file_info.type == .Directory
 		{
-			new_target_dir:= fmt.aprintf("%s\\%s", target_directory, file_info.name)
+			new_target_dir:= fmt.aprintf("%s%s", target_directory, file_info.fullpath[len(folder_directory):])
 			os.make_directory(new_target_dir)
 			delete(new_target_dir)
 		}
